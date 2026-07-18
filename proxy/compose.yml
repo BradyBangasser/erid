@@ -13,8 +13,8 @@ services:
     environment:
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
     volumes:
-      - /run/user/1000/podman/podman.sock:/var/run/docker.sock:ro
-      - ./acme.json:/acme.json
+      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      - ./acme.json:/acme.json:Z
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
