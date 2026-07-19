@@ -35,7 +35,7 @@ services:
       - "traefik.tcp.routers.step-router.entrypoints=websecure"
       - "traefik.tcp.routers.step-router.tls.passthrough=true"
       - "traefik.tcp.routers.step-router.service=step-svc"
-      - "traefik.tcp.services.step-svc.loadbalancer.server.port=8443"
+      - "traefik.tcp.services.step-svc.loadbalancer.server.port=9000"
 
 volumes:
   ca: {}
