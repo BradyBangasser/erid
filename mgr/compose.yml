@@ -12,6 +12,23 @@ services:
       - "traefik.http.routers.whoami.entrypoints=websecure"
       - "traefik.http.routers.whoami.tls=true"
       - "traefik.http.routers.whoami.tls.certresolver=le"
+      - "traefik.http.middlewares.pass-cert.passtlsclientcert.pem=true"
+      - "traefik.http.routers.whoami.middlewares=pass-cert"
+      - "traefik.http.middlewares.pass-cert.passtlsclientcert.info.subject.commonname=true"
+
+  step:
+    image: docker.io/smallstep/step-ca
+    container_name: ca
+    ports:
+      - "8443:8443"
+    restart: unless-stopped
+    volumes:
+      - ca:/home/step-ca
+    environment:
+      - DOCKER_STEPCA_INIT_NAME=Bangasser CA
+      - DOCKER_STEPCA_INIT_DNS_NAMES=ca.bangasser.dev
+      - DOCKER_STEPCA_INIT_PASSWORD=your_secure_password
+      - DOCKER_STEPCA_INIT_ACME=true
 
 networks:
   proxy:
