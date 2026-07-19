@@ -30,6 +30,9 @@ services:
       - DOCKER_STEPCA_INIT_PASSWORD=your_secure_password
       - DOCKER_STEPCA_INIT_ACME=true
 
+volumes:
+  ca: {}
+
 networks:
   proxy:
     external: true
