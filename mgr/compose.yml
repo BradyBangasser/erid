@@ -31,11 +31,11 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ca.rule=Host(`ca.bangasser.dev`)"
-      - "traefik.http.routers.ca.entrypoints=websecure"
-      - "traefik.http.routers.ca.tls=true"
-      - "traefik.http.routers.ca.tls.certresolver=le"
-      - "traefik.http.routers.ca.middlewares=pass-cert"
+      - "traefik.tcp.routers.step-router.rule=HostSNI(`ca.bangasser.dev`)"
+      - "traefik.tcp.routers.step-router.entrypoints=websecure"
+      - "traefik.tcp.routers.step-router.tls.passthrough=true"
+      - "traefik.tcp.routers.step-router.service=step-svc"
+      - "traefik.tcp.services.step-svc.loadbalancer.server.port=8443"
 
 volumes:
   ca: {}
