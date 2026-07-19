@@ -15,6 +15,7 @@ services:
       - "traefik.http.middlewares.pass-cert.passtlsclientcert.pem=true"
       - "traefik.http.routers.whoami.middlewares=pass-cert"
       - "traefik.http.middlewares.pass-cert.passtlsclientcert.info.subject.commonname=true"
+      - "traefik.http.routers.whoami.tls.options=require-mtls@file"
 
   step:
     image: docker.io/smallstep/step-ca

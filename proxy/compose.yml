@@ -1,11 +1,33 @@
 version: "3.8"
 services:
+  fetch-root:
+    image: docker.io/curlimages/curl:latest
+    container_name: fetch-root
+    networks:
+      - proxy
+    volumes:
+      - cert-sync:/shared
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Attempting to fetch Root CA..."
+        # Try the local internal Podman network first, then fallback to public internet
+        until curl -k -s -f https://ca:9000/roots.pem -o /shared/roots.pem || \
+        curl -k -s -f https://ca.bangasser.dev:8443/roots.pem -o /shared/roots.pem; do
+          echo "CA not reachable yet. Retrying in 3 seconds..."
+          sleep 3
+        done
+        echo "Root certificate fetched successfully!"
+
   traefik:
     image: docker.io/library/traefik:v3.0
     container_name: traefik
     security_opt:
       - label=disable
     restart: always
+    depends_on:
+      fetch-root:
+        condition: service_completed_successfully
     ports:
       - "8080:80"
       - "8443:443"
@@ -15,6 +37,8 @@ services:
     volumes:
       - /run/podman/podman.sock:/var/run/docker.sock:ro
       - ./acme.json:/acme.json:Z
+      - ./dynamic.yml:/dynamic.yml:Z
+      - cert-sync:/shared:ro
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -25,13 +49,17 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--certificatesresolvers.le.acme.email=you@bangasser.dev"
+      - "--certificatesresolvers.le.acme.email=brady@bangasser.dev"
       - "--certificatesresolvers.le.acme.storage=/acme.json"
       - "--certificatesresolvers.le.acme.dnschallenge=true"
       - "--certificatesresolvers.le.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.le.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+      - "--providers.file.filename=/dynamic.yml"
     networks:
       - proxy
+
+volumes:
+  cert-sync: {}
 
 networks:
   proxy:

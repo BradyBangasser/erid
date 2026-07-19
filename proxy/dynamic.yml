@@ -1,0 +1,7 @@
+tls:
+  options:
+    require-mtls:
+      clientAuth:
+        caFiles:
+          - /shared/roots.pem
+        clientAuthType: RequireAndVerifyClientCert
