@@ -27,6 +27,15 @@ services:
       - DOCKER_STEPCA_INIT_DNS_NAMES=ca.bangasser.dev
       - DOCKER_STEPCA_INIT_PASSWORD=your_secure_password
       - DOCKER_STEPCA_INIT_ACME=true
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ca.rule=Host(`ca.bangasser.dev`)"
+      - "traefik.http.routers.ca.entrypoints=websecure"
+      - "traefik.http.routers.ca.tls=true"
+      - "traefik.http.routers.ca.tls.certresolver=le"
+      - "traefik.http.routers.ca.middlewares=pass-cert"
 
 volumes:
   ca: {}
