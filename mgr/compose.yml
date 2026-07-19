@@ -19,8 +19,6 @@ services:
   step:
     image: docker.io/smallstep/step-ca
     container_name: ca
-    ports:
-      - "8443:8443"
     restart: unless-stopped
     volumes:
       - ca:/home/step-ca
