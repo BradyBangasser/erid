@@ -68,7 +68,7 @@ services:
           echo "CA already initialized. Skipping cold start."
         fi
 
-  step-ca:
+  ca:
     image: docker.io/smallstep/step-ca
     environment:
       PGPASSWORD: ${REMOTE_DB_PASSWORD}
