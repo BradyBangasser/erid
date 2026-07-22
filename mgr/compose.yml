@@ -55,14 +55,14 @@ services:
           jq --arg db_host "$$DB_HOST" '.db = {
             "type": "postgresql",
             "database": "stepca",
-            "dataSource": ("host=" + $$db_host + " port=27936 user=stepca_user sslmode=require")
+            "dataSource": ("host=" + $$db_host + " port=27936 user=stepca_dbuser sslmode=require")
           }' /home/step/config/ca.json > /tmp/ca.json
           
           cat /tmp/ca.json > /home/step/config/ca.json
           
           chown -R 1000:1000 /home/step
           
-          rm /tmp/pass.txt /tmp/ca.json
+          rm /tmp/ca.json
           echo "Initialization complete."
         else
           echo "CA already initialized. Skipping cold start."
