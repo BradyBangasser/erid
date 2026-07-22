@@ -50,6 +50,8 @@ services:
 
           step ca provisioner add acme --type ACME --ca-config /home/step/config/ca.json
 
+          mv /tmp/pass.txt /home/step/secrets/password
+
           jq --arg db_host "$$DB_HOST" '.db = {
             "type": "postgresql",
             "database": "stepca",
