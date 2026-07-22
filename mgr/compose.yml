@@ -41,7 +41,7 @@ services:
           echo -n "$$CA_PASSWORD" > /tmp/pass.txt
           
           step ca init --name='Bangasser CA' \
-            --dns='ca.bangasser.dev,localhost' \
+            --dns='ca.bangasser.dev,localhost,ca' \
             --address=':9000' \
             --provisioner='admin@bangasser.dev' \
             --password-file=/tmp/pass.txt \
