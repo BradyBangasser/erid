@@ -1,0 +1,7 @@
+{
+  "db": {
+    "type": "postgresql",
+    "database": "stepca",
+    "dataSource": "host=localhost port=5432 user=stepca_user sslmode=verify-full"
+  }
+}
