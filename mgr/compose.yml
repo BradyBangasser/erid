@@ -90,24 +90,63 @@ services:
       - "traefik.tcp.routers.step-router.service=step-svc"
       - "traefik.tcp.services.step-svc.loadbalancer.server.port=9000"
 
+  redis:
+    image: docker.io/redis:7-alpine
+    restart: unless-stopped
+    command: sh -c 'redis-server --appendonly yes --requirepass $${REDIS_PASSWORD}'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - proxy
+
   netbox:
     image: netboxcommunity/netbox:latest
     restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      SECRET_KEY: ${NETBOX_SECRET_KEY}
+      ALLOWED_HOSTS: "netbox.bangasser.dev"
+      DB_USER: netbox_dbuser
+      DB_HOST: na-bangasser-db-0-bangasser-db.g.aivencloud.com
+      DB_PORT: 27936
+      DB_NAME: netbox
+      DB_PASSWORD: ${NETBOX_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.netbox-router.rule=Host(`netbox.bangasser.dev`)"
+      - "traefik.http.routers.netbox-router.entrypoints=websecure"
+      - "traefik.http.routers.netbox-router.tls=true"
+      - "traefik.http.routers.netbox-router.tls.certresolver=le"
+      - "traefik.http.services.netbox-svc.loadbalancer.server.port=8080"
+
+  netbox-worker:
+    image: netboxcommunity/netbox:latest
+    restart: unless-stopped
+    depends_on:
+      - netbox
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
     environment:
       DB_USER: netbox_dbuser
       DB_HOST: na-bangasser-db-0-bangasser-db.g.aivencloud.com
       DB_PORT: 27936
       DB_NAME: netbox
       DB_PASSWORD: ${NETBOX_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SECRET_KEY: ${NETBOX_SECRET_KEY}
+      ALLOWED_HOSTS: "netbox.bangasser.dev"
     networks:
       - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.tcp.routers.netbox-router.rule=HostSNI(`netbox.bangasser.dev`)"
-      - "traefik.tcp.routers.netbox-router.entrypoints=websecure"
-      - "traefik.tcp.routers.netbox-router.tls.passthrough=true"
-      - "traefik.tcp.routers.netbox-router.service=netbox-svc"
-      - "traefik.tcp.services.netbox-svc.loadbalancer.server.port=9000"
 
 volumes:
   ca: {}
