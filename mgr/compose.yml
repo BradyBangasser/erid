@@ -104,6 +104,9 @@ services:
     restart: unless-stopped
     depends_on:
       - redis
+      - netbox-secret-init
+    volumes:
+      - netbox-secret:/run/secrets
     environment:
       SECRET_KEY: ${NETBOX_SECRET_KEY}
       ALLOWED_HOSTS: "netbox.bangasser.dev"
@@ -128,14 +131,18 @@ services:
   netbox-worker:
     image: netboxcommunity/netbox:latest
     restart: unless-stopped
+    volumes:
+      - netbox-secret:/run/secrets
     depends_on:
       - netbox
+      - netbox-secret-init
     command:
       - /opt/netbox/venv/bin/python
       - /opt/netbox/netbox/manage.py
       - rqworker
     environment:
       DB_USER: netbox_dbuser
+      SECRET_KEY_FILE: /run/secrets/secret_key
       DB_HOST: na-bangasser-db-0-bangasser-db.g.aivencloud.com
       DB_PORT: 27936
       DB_NAME: netbox
@@ -144,12 +151,26 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SECRET_KEY: ${NETBOX_SECRET_KEY}
-      ALLOWED_HOSTS: "netbox.bangasser.dev"
+      ALLOWED_HOSTS: "*.bangasser.dev"
     networks:
       - proxy
 
+  netbox-secret-init:
+    image: netboxcommunity/netbox:latest
+    environment:
+      SECRET_KEY_FILE: /run/secrets/secret_key
+    volumes:
+      - netbox-secret:/run/secrets
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ ! -f /run/secrets/secret_key ]; then
+          python /opt/netbox/netbox/generate_secret_key.py > /run/secrets/secret_key
+        fi
+
 volumes:
   ca: {}
+  netbox-secret: {}
 
 networks:
   proxy:
