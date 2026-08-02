@@ -92,7 +92,7 @@ services:
     image: headscale/headscale:stable
     container_name: headscale
     volumes:
-      - ./container-config:/etc/headscale
+      - ./hs.cfg:/etc/headscale
       - ./container-data/data:/var/lib/headscale
     command: serve
     restart: unless-stopped
