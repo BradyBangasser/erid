@@ -92,8 +92,8 @@ services:
     image: headscale/headscale:stable
     container_name: headscale
     volumes:
-      - ./hs.cfg:/etc/headscale
-      - ./container-data/data:/var/lib/headscale
+      - ./hs.cfg:/etc/headscale/config.yaml
+      - headscale-data:/var/lib/headscale:Z
     command: serve
     restart: unless-stopped
     networks:
@@ -110,10 +110,8 @@ services:
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolalloworiginlist=https://headscale.bangasser.dev"
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.headscale-cors.headers.addvaryheader=true"
-      - "traefik.http.routers.headscale-root.rule=Host(`headscale.bangasser.dev`) && Path(`/`)"
-      - "traefik.http.routers.headscale-root.service=headscale-root-redirect"
-      - "traefik.http.routers.headscale-root.middlewares=headscale-redirect"
-      - "traefik.http.middlewares.headscale-redirect.addprefix.prefix=/admin"
+      # (Root-path -> /admin redirect removed — it referenced a Traefik
+      # service that was never defined. Just visit /admin directly.)
 
   headplane:
     image: ghcr.io/tale/headplane:latest
@@ -123,8 +121,10 @@ services:
       - headscale
     volumes:
       - ./headplane-config/config.yaml:/etc/headplane/config.yaml:Z
-      - ./headplane-data:/var/lib/headplane:Z
-      - ./container-config:/etc/headscale:ro,Z
+      - headplane-data:/var/lib/headplane:Z
+      # Fixed to match where the config actually lives now (./hs.cfg),
+      # not the old ./container-config path.
+      - ./hs.cfg:/etc/headscale/config.yaml:ro,Z
     networks:
       - proxy
     labels:
@@ -138,6 +138,8 @@ services:
 
 volumes:
   ca: {}
+  headscale-data: {}
+  headplane-data: {}
 
 networks:
   proxy:
