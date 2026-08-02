@@ -100,25 +100,41 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.tcp.routers.headscale-router.rule=HostSNI(`headscale.bangasser.dev`)"
-      - "traefik.tcp.routers.headscale-router.entrypoints=websecure"
-      - "traefik.tcp.routers.headscale-router.tls.passthrough=true"
-      - "traefik.tcp.routers.headscale-router.service=headscale-svc"
-      - "traefik.tcp.services.headscale-svc.loadbalancer.server.port=8080"
+      - "traefik.http.routers.headscale.rule=Host(`headscale.bangasser.dev`)"
+      - "traefik.http.routers.headscale.entrypoints=websecure"
+      - "traefik.http.routers.headscale.tls=true"
+      - "traefik.http.routers.headscale.tls.certresolver=le"
+      - "traefik.http.routers.headscale.middlewares=headscale-cors"
+      - "traefik.http.middlewares.headscale-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.headscale-cors.headers.accesscontrolallowmethods=GET,POST,PUT"
+      - "traefik.http.middlewares.headscale-cors.headers.accesscontrolalloworiginlist=https://headscale.bangasser.dev"
+      - "traefik.http.middlewares.headscale-cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.headscale-cors.headers.addvaryheader=true"
+      - "traefik.http.routers.headscale-root.rule=Host(`headscale.bangasser.dev`) && Path(`/`)"
+      - "traefik.http.routers.headscale-root.service=headscale-root-redirect"
+      - "traefik.http.routers.headscale-root.middlewares=headscale-redirect"
+      - "traefik.http.middlewares.headscale-redirect.addprefix.prefix=/admin"
 
-  headscale-ui:
-    image: ghcr.io/gurucomputing/headscale-ui:latest
+  headplane:
+    image: ghcr.io/tale/headplane:latest
+    container_name: headplane
     restart: unless-stopped
-    container_name: headscale-ui
+    depends_on:
+      - headscale
+    volumes:
+      - ./headplane-config/config.yaml:/etc/headplane/config.yaml:Z
+      - ./headplane-data:/var/lib/headplane:Z
+      - ./container-config:/etc/headscale:ro,Z
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.tcp.routers.headscale-ui-router.rule=HostSNI(`admin.headscale.bangasser.dev`)"
-      - "traefik.tcp.routers.headscale-ui-router.entrypoints=websecure"
-      - "traefik.tcp.routers.headscale-ui-router.tls.passthrough=true"
-      - "traefik.tcp.routers.headscale-ui-router.service=headscale-ui-svc"
-      - "traefik.tcp.services.headscale-ui-svc.loadbalancer.server.port=8080"
+      - "traefik.http.routers.headplane.rule=Host(`headscale.bangasser.dev`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.headplane.entrypoints=websecure"
+      - "traefik.http.routers.headplane.tls=true"
+      - "traefik.http.routers.headplane.tls.certresolver=le"
+      - "traefik.http.routers.headplane.service=headplane-svc"
+      - "traefik.http.services.headplane-svc.loadbalancer.server.port=3000"
 
 volumes:
   ca: {}
