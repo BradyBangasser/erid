@@ -72,8 +72,6 @@ services:
     image: docker.io/smallstep/step-ca
     environment:
       PGPASSWORD: ${STEPCA_DB_PASSWORD}
-    ports:
-      - "9000:9000"
     depends_on:
       step-ca-init:
         condition: service_completed_successfully
@@ -89,6 +87,38 @@ services:
       - "traefik.tcp.routers.step-router.tls.passthrough=true"
       - "traefik.tcp.routers.step-router.service=step-svc"
       - "traefik.tcp.services.step-svc.loadbalancer.server.port=9000"
+
+  headscale:
+    image: headscale/headscale:stable
+    container_name: headscale
+    volumes:
+      - ./container-config:/etc/headscale
+      - ./container-data/data:/var/lib/headscale
+    command: serve
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.headscale-router.rule=HostSNI(`headscale.bangasser.dev`)"
+      - "traefik.tcp.routers.headscale-router.entrypoints=websecure"
+      - "traefik.tcp.routers.headscale-router.tls.passthrough=true"
+      - "traefik.tcp.routers.headscale-router.service=headscale-svc"
+      - "traefik.tcp.services.headscale-svc.loadbalancer.server.port=8080"
+
+  headscale-ui:
+    image: ghcr.io/gurucomputing/headscale-ui:latest
+    restart: unless-stopped
+    container_name: headscale-ui
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.headscale-ui-router.rule=HostSNI(`admin.headscale.bangasser.dev`)"
+      - "traefik.tcp.routers.headscale-ui-router.entrypoints=websecure"
+      - "traefik.tcp.routers.headscale-ui-router.tls.passthrough=true"
+      - "traefik.tcp.routers.headscale-ui-router.service=headscale-ui-svc"
+      - "traefik.tcp.services.headscale-ui-svc.loadbalancer.server.port=8080"
 
 volumes:
   ca: {}
