@@ -122,8 +122,6 @@ services:
     volumes:
       - ./headplane-config/config.yaml:/etc/headplane/config.yaml:Z
       - headplane-data:/var/lib/headplane:Z
-      # Fixed to match where the config actually lives now (./hs.cfg),
-      # not the old ./container-config path.
       - ./hs.cfg:/etc/headscale/config.yaml:ro,Z
     networks:
       - proxy
