@@ -110,8 +110,6 @@ services:
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolalloworiginlist=https://headscale.bangasser.dev"
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.headscale-cors.headers.addvaryheader=true"
-      # (Root-path -> /admin redirect removed — it referenced a Traefik
-      # service that was never defined. Just visit /admin directly.)
 
   headplane:
     image: ghcr.io/tale/headplane:latest
@@ -120,7 +118,7 @@ services:
     depends_on:
       - headscale
     volumes:
-      - ./headplane-config/config.yaml:/etc/headplane/config.yaml:Z
+      - ./hp.cfg:/etc/headplane/config.yaml:Z
       - headplane-data:/var/lib/headplane:Z
       - ./hs.cfg:/etc/headscale/config.yaml:ro,Z
     networks:
