@@ -96,20 +96,36 @@ services:
       - headscale-data:/var/lib/headscale:Z
     command: serve
     restart: unless-stopped
+    environment:
+      - HEADSCALE_DATABASE_POSTGRES_PASSWORD=${HEADSCALE_DB_PASSWORD}
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
+
+      # --- MAIN HEADSCALE ROUTER (Port 8080) ---
       - "traefik.http.routers.headscale.rule=Host(`headscale.bangasser.dev`)"
       - "traefik.http.routers.headscale.entrypoints=websecure"
       - "traefik.http.routers.headscale.tls=true"
       - "traefik.http.routers.headscale.tls.certresolver=le"
+      - "traefik.http.routers.headscale.service=headscale-svc"
+      - "traefik.http.services.headscale-svc.loadbalancer.server.port=8080"
+
+      # CORS Middlewares for Main Router
       - "traefik.http.routers.headscale.middlewares=headscale-cors"
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolallowheaders=*"
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolallowmethods=GET,POST,PUT"
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolalloworiginlist=https://headscale.bangasser.dev"
       - "traefik.http.middlewares.headscale-cors.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.headscale-cors.headers.addvaryheader=true"
+
+      # --- METRICS ROUTER (Port 9090) ---
+      - "traefik.http.routers.hs-metrics.rule=Host(`headscale.bangasser.dev`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.hs-metrics.entrypoints=websecure"
+      - "traefik.http.routers.hs-metrics.tls=true"
+      - "traefik.http.routers.hs-metrics.tls.certresolver=le"
+      - "traefik.http.routers.hs-metrics.service=hs-metrics-svc"
+      - "traefik.http.services.hs-metrics-svc.loadbalancer.server.port=9090"
 
   headplane:
     image: ghcr.io/tale/headplane:latest
@@ -125,7 +141,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.headplane.rule=Host(`headscale.bangasser.dev`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.headplane.rule=Host(`headplane.bangasser.dev`)"
       - "traefik.http.routers.headplane.entrypoints=websecure"
       - "traefik.http.routers.headplane.tls=true"
       - "traefik.http.routers.headplane.tls.certresolver=le"

@@ -105,6 +105,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/99-erid.cfg /etc/cloud/cloud.cfg.d/99-erid.cfg",
+      # Make SEL happy
       "sudo restorecon -Rv /etc/cloud/cloud.cfg.d/"
     ]
   }
