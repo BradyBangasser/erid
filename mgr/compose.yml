@@ -97,7 +97,7 @@ services:
     command: serve
     restart: unless-stopped
     environment:
-      - HEADSCALE_DATABASE_POSTGRES_PASSWORD=${HEADSCALE_DB_PASSWORD}
+      - HEADSCALE_DATABASE_POSTGRES_PASS=${HEADSCALE_DB_PASSWORD}
     networks:
       - proxy
     labels:

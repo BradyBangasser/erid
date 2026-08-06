@@ -1,0 +1,20 @@
+id: erid
+name: "Erid: Unified Hybrid-Cloud Images"
+period: "2026"
+weight: 8
+start: "2025-09"
+tags: [sre, cloud, software, sales]
+tech: [Packer, AWS, KVM/QEMU, Traefik, Nomad, Consul, step-ca]
+bullets:
+  - text: "Built one Packer pipeline producing identical AlmaLinux golden images across on-prem KVM and AWS x86 and ARM."
+    tags: [sre, cloud, software, sales]
+    priority: 1
+  - text: "Run a personal hybrid cloud in production on these images, hosting multiple services across on-prem and cloud."
+    tags: [sre, cloud, sales]
+    priority: 1
+  - text: "Enforce mutual TLS everywhere with a self-hosted step-ca private CA, Traefik ingress, and a Headscale mesh."
+    tags: [sre, cloud, software]
+    priority: 2
+  - text: "Building a Nomad and Consul variant for canary deployments and automatic failover across the cluster."
+    tags: [sre, cloud, software]
+    priority: 2
